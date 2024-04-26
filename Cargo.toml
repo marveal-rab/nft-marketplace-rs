@@ -1,0 +1,19 @@
+[package]
+name = "nft-marketplace-rs"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+axum = { features = ["multipart"] }
+async-graphql = {}
+async-graphql-axum = {}
+tokio = {features = ["rt-multi-thread"]}
+tower-http = {}
+diesel = {}
+futures-util = {}
+serde_json = {}
+serde = {}
+base64 = {}
+aes = {version = "0.8.4"}
