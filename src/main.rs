@@ -1,25 +1,37 @@
 use std::sync::Arc;
+use std::time::Duration;
+
+use axum::error_handling::HandleErrorLayer;
+use axum::Router;
+use dotenv::dotenv;
+use tokio::net::TcpListener;
+use tower::ServiceBuilder;
 
 use app_state::AppState;
 
-use axum::Router;
-
-use tokio::net::TcpListener;
-
 mod app_state;
 mod domain;
+mod errors;
 mod middlewares;
 mod routers;
 mod services;
 
 #[tokio::main]
 async fn main() {
-    let app_state = Arc::new(AppState::new());
+    dotenv().ok();
+
+    let app_state: Arc<AppState> = Arc::new(AppState::new());
 
     let app = Router::new()
         .merge(services::graphql_playground_router())
         .merge(services::graphql_router(app_state.clone()))
-        .merge(services::api_router(app_state.clone()));
+        .merge(services::api_router(app_state.clone()))
+        .merge(services::no_auth_api_router(app_state.clone()))
+        .layer(
+            ServiceBuilder::new()
+                .layer(HandleErrorLayer::new(middlewares::error::handle_error))
+                .timeout(Duration::from_secs(30)),
+        );
 
     println!("Playground: http://localhost:8000");
 
