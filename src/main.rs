@@ -19,6 +19,7 @@ mod services;
 #[tokio::main]
 async fn main() {
     dotenv().ok();
+    tracing_subscriber::fmt::init();
 
     let app_state: Arc<AppState> = Arc::new(AppState::new());
 

@@ -15,9 +15,11 @@ diesel = { version = "2.1.6" }
 futures-util = { version = "0.3.30" }
 serde_json = { version = "1.0.116" }
 serde = { version = "1.0.198" }
-ipfs-api-backend-hyper = "0.6.0"
 tower = { version = "0.4.13", features = ["timeout"] }
 jsonwebtoken = "9.3.0"
 chrono = "0.4.19"
 once_cell = "1.19.0"
 dotenv = "0.15.0"
+reqwest = { version = "0.12.4", features = ["multipart"] }
+tracing-subscriber = "0.3.18"
+tracing = "0.1.40"

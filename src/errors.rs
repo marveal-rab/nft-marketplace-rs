@@ -8,10 +8,20 @@ use serde_json::json;
 
 #[derive(Debug)]
 pub enum AppError {
+    // TOKEN
     InvalidToken,
     WrongCredentials,
     TokenCreation,
     MissingCredentials,
+
+    // UPLOAD
+    UploadMissingFile,
+
+    // IPFS
+    RequestIpfsAddFailed,
+    RequestIpfsAddError,
+    RequestIpfsAddResponseNoBody,
+    RequestIpfsAddResponseBodyDeserializeFailed,
 }
 
 impl IntoResponse for AppError {
@@ -21,6 +31,15 @@ impl IntoResponse for AppError {
             AppError::MissingCredentials => (StatusCode::BAD_REQUEST, "Missing credentials"),
             AppError::TokenCreation => (StatusCode::INTERNAL_SERVER_ERROR, "Token creation error"),
             AppError::InvalidToken => (StatusCode::BAD_REQUEST, "Invalid token"),
+            AppError::RequestIpfsAddFailed
+            | AppError::RequestIpfsAddError
+            | AppError::RequestIpfsAddResponseNoBody
+            | AppError::RequestIpfsAddResponseBodyDeserializeFailed => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Failed to upload file to IPFS",
+            ),
+            AppError::UploadMissingFile => (StatusCode::BAD_REQUEST, "missing file"),
+            _ => (StatusCode::INTERNAL_SERVER_ERROR, "Unknown Error"),
         };
         let body = Json(json!({
             "error": error_message,
