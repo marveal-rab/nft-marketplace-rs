@@ -1,7 +1,7 @@
 use async_graphql::{MergedObject, MergedSubscription, Schema};
 
-use crate::domain::models::file::FileMutation;
-use crate::domain::models::token::{TokenMutation, TokenQuery, TokenSubscription};
+use crate::domain::file::FileMutation;
+use crate::domain::token::{TokenMutation, TokenQuery, TokenSubscription};
 
 #[derive(MergedObject, Default)]
 pub struct QueryRoot(TokenQuery);

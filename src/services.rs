@@ -1,23 +1,23 @@
-use async_graphql::http::{ALL_WEBSOCKET_PROTOCOLS, GraphQLPlaygroundConfig, playground_source};
+use async_graphql::http::{playground_source, GraphQLPlaygroundConfig, ALL_WEBSOCKET_PROTOCOLS};
 use async_graphql_axum::{GraphQLProtocol, GraphQLRequest, GraphQLResponse, GraphQLWebSocket};
 use axum::{
-    extract::{State, ws::WebSocketUpgrade},
+    extract::{ws::WebSocketUpgrade, State},
     http,
     http::header::HeaderMap,
     response::{Html, IntoResponse, Response},
-    Router,
     routing::{get, post},
+    Router,
 };
 
+use crate::errors::AppError;
 use crate::{
     app_state::AppState,
-    domain::models::token::{on_connection_init, Token},
+    domain::token::{on_connection_init, Token},
 };
-use crate::errors::AppError;
 
 async fn graphql_playground() -> impl IntoResponse {
     Html(playground_source(
-        GraphQLPlaygroundConfig::new("/").subscription_endpoint("/ws"),
+        GraphQLPlaygroundConfig::new("/graphql").subscription_endpoint("/ws"),
     ))
 }
 

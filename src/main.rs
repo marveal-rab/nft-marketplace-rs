@@ -28,7 +28,7 @@ async fn main() {
         .merge(services::graphql_router(app_state))
         .layer(
             ServiceBuilder::new()
-                .layer(HandleErrorLayer::new(middlewares::error::handle_error))
+                .layer(HandleErrorLayer::new(middlewares::handle_error))
                 .timeout(Duration::from_secs(30)),
         )
         .layer(

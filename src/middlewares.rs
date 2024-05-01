@@ -1,11 +1,7 @@
-use axum::BoxError;
 use axum::http::{Method, StatusCode, Uri};
+use axum::BoxError;
 
-pub async fn handle_error(
-    method: Method,
-    uri: Uri,
-    err: BoxError,
-) -> (StatusCode, String) {
+pub async fn handle_error(method: Method, uri: Uri, err: BoxError) -> (StatusCode, String) {
     if err.is::<tower::timeout::error::Elapsed>() {
         (
             StatusCode::REQUEST_TIMEOUT,

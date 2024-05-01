@@ -4,7 +4,7 @@ use std::string::ToString;
 use async_graphql::{Context, Data, Object, Result, SimpleObject, Subscription};
 use chrono::{Duration, Utc};
 use futures_util::Stream;
-use jsonwebtoken::{decode, DecodingKey, encode, EncodingKey, Header, Validation};
+use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 
