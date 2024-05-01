@@ -1,18 +1,23 @@
 use std::env;
 use std::string::ToString;
 
-use async_graphql::{Context, Data, Object, Result, Subscription};
+use async_graphql::{Context, Data, Object, Result, SimpleObject, Subscription};
 use chrono::{Duration, Utc};
 use futures_util::Stream;
-use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
+use jsonwebtoken::{decode, DecodingKey, encode, EncodingKey, Header, Validation};
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 
 use crate::errors::AppError;
 
-use super::{QueryRoot, SubscriptionRoot};
+#[derive(Default)]
+pub struct TokenMutation;
+#[derive(Default)]
+pub struct TokenQuery;
+#[derive(Default)]
+pub struct TokenSubscription;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default, SimpleObject)]
 pub struct Token {
     pub secret: String,
     pub token_type: String,
@@ -89,19 +94,26 @@ static KEYS: Lazy<Keys> = Lazy::new(|| {
 });
 
 #[Object]
-impl QueryRoot {
+impl TokenQuery {
     async fn current_token<'a>(&self, ctx: &'a Context<'_>) -> Option<&'a str> {
         ctx.data_opt::<Token>().map(|token| token.secret.as_str())
     }
 }
 
 #[Subscription]
-impl SubscriptionRoot {
+impl TokenSubscription {
     async fn values(&self, ctx: &Context<'_>) -> Result<impl Stream<Item = i32>> {
         if ctx.data::<Token>()?.secret != "123456" {
             return Err("Forbidden".into());
         }
         Ok(futures_util::stream::once(async move { 10 }))
+    }
+}
+
+#[Object]
+impl TokenMutation {
+    pub async fn generate_token(&self, address: String) -> Result<Token> {
+        Token::generate(address).map_err(|err| async_graphql::Error::from(err))
     }
 }
 

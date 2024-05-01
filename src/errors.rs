@@ -2,11 +2,11 @@ use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
 
 use axum::http::StatusCode;
-use axum::response::{IntoResponse, Response};
 use axum::Json;
+use axum::response::{IntoResponse, Response};
 use serde_json::json;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum AppError {
     // TOKEN
     InvalidToken,

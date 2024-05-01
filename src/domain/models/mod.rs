@@ -1,5 +1,2 @@
+pub mod file;
 pub mod token;
-
-pub struct QueryRoot;
-
-pub struct SubscriptionRoot;

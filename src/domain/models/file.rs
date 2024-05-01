@@ -1,13 +1,18 @@
-use axum::body::Bytes;
-use axum::extract::Multipart;
-use axum::http::HeaderMap;
-use axum::Extension;
+use std::io::Read;
+
+use async_graphql::{Context, Object, Result, SimpleObject, Upload};
 use reqwest::Client;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use crate::errors::AppError;
-use crate::middlewares::auth::CurrentUser;
-use crate::routers::ApiResponse;
+
+#[derive(Default)]
+pub struct FileMutation;
+
+#[derive(Serialize, Deserialize, Debug, Default, SimpleObject)]
+pub struct IPFSFile {
+    pub url: String,
+}
 
 async fn ipfs_file_upload(file_name: String, file_bytes: Vec<u8>) -> Result<String, AppError> {
     let client = Client::new();
@@ -59,32 +64,17 @@ async fn ipfs_file_upload(file_name: String, file_bytes: Vec<u8>) -> Result<Stri
     };
 }
 
-#[derive(Serialize)]
-pub struct UploadResponse {
-    url: String,
-}
+#[Object]
+impl FileMutation {
+    async fn upload_file(&self, ctx: &Context<'_>, file: Upload) -> Result<IPFSFile> {
+        tracing::info!("upload_file");
+        let file_name = file.value(ctx).unwrap().filename;
+        let mut buffer = Vec::new();
+        file.value(ctx).unwrap().content.read_to_end(&mut buffer)?;
 
-pub async fn upload(
-    Extension(current_user): Extension<CurrentUser>,
-    _headers: HeaderMap,
-    mut multipart: Multipart,
-) -> ApiResponse<UploadResponse> {
-    // TODO check current user address
-    let address = current_user.address;
-
-    while let Some(field) = multipart.next_field().await.unwrap() {
-        let file_name = field.file_name().unwrap().to_string();
-        let data: Bytes = field.bytes().await.unwrap();
-
-        return match ipfs_file_upload(file_name, data.to_vec()).await {
-            Ok(url) => {
-                // TODO record to db
-
-                let upload_response = UploadResponse { url };
-                ApiResponse::success_with_data(upload_response)
-            }
-            Err(err) => ApiResponse::error(err),
-        };
+        match ipfs_file_upload(file_name, buffer).await {
+            Ok(url) => Ok(IPFSFile { url }),
+            Err(err) => Err(async_graphql::Error::from(err)),
+        }
     }
-    ApiResponse::error(AppError::UploadMissingFile)
 }

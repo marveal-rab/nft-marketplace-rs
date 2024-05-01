@@ -1,8 +1,16 @@
-use async_graphql::{EmptyMutation, Schema};
+use async_graphql::{MergedObject, MergedSubscription, Schema};
 
-use crate::domain::models::{QueryRoot, SubscriptionRoot};
+use crate::domain::models::file::FileMutation;
+use crate::domain::models::token::{TokenMutation, TokenQuery, TokenSubscription};
 
-pub type SchemaRoot = Schema<QueryRoot, EmptyMutation, SubscriptionRoot>;
+#[derive(MergedObject, Default)]
+pub struct QueryRoot(TokenQuery);
+#[derive(MergedSubscription, Default)]
+pub struct SubscriptionRoot(TokenSubscription);
+#[derive(MergedObject, Default)]
+pub struct MutationRoot(TokenMutation, FileMutation);
+
+pub type SchemaRoot = Schema<QueryRoot, MutationRoot, SubscriptionRoot>;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -11,7 +19,11 @@ pub struct AppState {
 
 impl AppState {
     pub fn new() -> Self {
-        let schema = Schema::new(QueryRoot, EmptyMutation, SubscriptionRoot);
+        let schema = Schema::new(
+            QueryRoot::default(),
+            MutationRoot::default(),
+            SubscriptionRoot::default(),
+        );
         Self { schema }
     }
 }
