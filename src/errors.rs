@@ -2,8 +2,8 @@ use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
 
 use axum::http::StatusCode;
-use axum::Json;
 use axum::response::{IntoResponse, Response};
+use axum::Json;
 use serde_json::json;
 
 #[derive(Debug, PartialEq)]
@@ -22,6 +22,17 @@ pub enum AppError {
     RequestIpfsAddError,
     RequestIpfsAddResponseNoBody,
     RequestIpfsAddResponseBodyDeserializeFailed,
+
+    // DATABASE
+    NoDatabaseConnection,
+
+    // USER
+    CreateUserFailed,
+    UserNotFound,
+    UserQueryError,
+    // COLLECTION
+    CollectionNotFound,
+    CreateCollectionFailed,
 }
 
 impl IntoResponse for AppError {

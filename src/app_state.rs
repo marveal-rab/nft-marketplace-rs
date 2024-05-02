@@ -1,14 +1,21 @@
 use async_graphql::{MergedObject, MergedSubscription, Schema};
 
+use crate::domain::collection::{CollectionMutation, CollectionQuery};
 use crate::domain::file::FileMutation;
 use crate::domain::token::{TokenMutation, TokenQuery, TokenSubscription};
+use crate::domain::user::{UserMutation, UserQuery};
 
 #[derive(MergedObject, Default)]
-pub struct QueryRoot(TokenQuery);
+pub struct QueryRoot(TokenQuery, CollectionQuery, UserQuery);
 #[derive(MergedSubscription, Default)]
 pub struct SubscriptionRoot(TokenSubscription);
 #[derive(MergedObject, Default)]
-pub struct MutationRoot(TokenMutation, FileMutation);
+pub struct MutationRoot(
+    TokenMutation,
+    FileMutation,
+    UserMutation,
+    CollectionMutation,
+);
 
 pub type SchemaRoot = Schema<QueryRoot, MutationRoot, SubscriptionRoot>;
 

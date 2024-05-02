@@ -14,6 +14,7 @@ mod app_state;
 mod domain;
 mod errors;
 mod middlewares;
+mod models;
 mod services;
 
 #[tokio::main]
@@ -38,7 +39,7 @@ async fn main() {
                 .allow_headers(Any),
         );
 
-    println!("Playground: http://localhost:8000");
+    println!("Playground: http://localhost:8000/playground");
 
     axum::serve(TcpListener::bind("127.0.0.1:8000").await.unwrap(), app)
         .await

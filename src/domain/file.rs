@@ -67,7 +67,6 @@ async fn ipfs_file_upload(file_name: String, file_bytes: Vec<u8>) -> Result<Stri
 #[Object]
 impl FileMutation {
     async fn upload_file(&self, ctx: &Context<'_>, file: Upload) -> Result<IPFSFile> {
-        tracing::info!("upload_file");
         let file_name = file.value(ctx).unwrap().filename;
         let mut buffer = Vec::new();
         file.value(ctx).unwrap().content.read_to_end(&mut buffer)?;

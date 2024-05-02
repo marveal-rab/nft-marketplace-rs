@@ -1,14 +1,14 @@
 use std::env;
 use std::string::ToString;
 
-use async_graphql::{Context, Data, Object, Result, SimpleObject, Subscription};
+use async_graphql::{Context, Data, Object, SimpleObject, Subscription};
 use chrono::{Duration, Utc};
 use futures_util::Stream;
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 
-use crate::errors::AppError;
+use crate::{errors::AppError, models::user::User};
 
 #[derive(Default)]
 pub struct TokenMutation;
@@ -53,7 +53,17 @@ impl Token {
             &Validation::default(),
         )
         .map(|data| data.claims)
-        .map_err(|_| AppError::InvalidToken);
+        .map_err(|err| {
+            tracing::error!("token parse error: {:?}", err);
+            AppError::InvalidToken
+        });
+    }
+
+    pub async fn current_user(&self) -> Result<User, AppError> {
+        let encrypt_user_info = self.parse()?;
+        User::find_by_address(encrypt_user_info.address)
+            .await
+            .map(|user| user.ok_or(AppError::UserNotFound))?
     }
 }
 
@@ -66,7 +76,7 @@ pub struct EncryptUserInfo {
 impl EncryptUserInfo {
     pub fn new(address: String) -> Self {
         Self {
-            address,
+            address: address.to_lowercase(),
             exp: (Utc::now().naive_utc() + Duration::days(1))
                 .and_utc()
                 .timestamp() as usize,
@@ -93,16 +103,43 @@ static KEYS: Lazy<Keys> = Lazy::new(|| {
     Keys::new(secret.as_bytes())
 });
 
+#[derive(Debug, Clone, Serialize, Deserialize, SimpleObject)]
+pub struct CurrentUserResult {
+    pub id: String,
+    pub name: Option<String>,
+    pub address: String,
+    pub email: Option<String>,
+    pub avatar_url: Option<String>,
+}
+
+impl From<User> for CurrentUserResult {
+    fn from(user: User) -> Self {
+        Self {
+            id: user.id.to_string(),
+            name: user.name,
+            address: user.address,
+            email: user.email,
+            avatar_url: user.avatar_url,
+        }
+    }
+}
+
 #[Object]
 impl TokenQuery {
-    async fn current_token<'a>(&self, ctx: &'a Context<'_>) -> Option<&'a str> {
-        ctx.data_opt::<Token>().map(|token| token.secret.as_str())
+    async fn current_user<'a>(&self, ctx: &Context<'_>) -> Result<CurrentUserResult, AppError> {
+        let token = ctx
+            .data_opt::<Token>()
+            .ok_or(AppError::MissingCredentials)?;
+        token
+            .current_user()
+            .await
+            .map(|user| CurrentUserResult::from(user))
     }
 }
 
 #[Subscription]
 impl TokenSubscription {
-    async fn values(&self, ctx: &Context<'_>) -> Result<impl Stream<Item = i32>> {
+    async fn values(&self, ctx: &Context<'_>) -> async_graphql::Result<impl Stream<Item = i32>> {
         if ctx.data::<Token>()?.secret != "123456" {
             return Err("Forbidden".into());
         }
@@ -112,12 +149,12 @@ impl TokenSubscription {
 
 #[Object]
 impl TokenMutation {
-    pub async fn generate_token(&self, address: String) -> Result<Token> {
-        Token::generate(address).map_err(|err| async_graphql::Error::from(err))
+    pub async fn generate_token(&self, address: String) -> Result<Token, AppError> {
+        Token::generate(address)
     }
 }
 
-pub async fn on_connection_init(value: serde_json::Value) -> Result<Data> {
+pub async fn on_connection_init(value: serde_json::Value) -> async_graphql::Result<Data> {
     #[derive(serde::Deserialize)]
     struct Payload {
         token: String,

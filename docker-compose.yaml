@@ -1,0 +1,32 @@
+version: '2'
+name: nft-marketplace-backend
+services:
+  # backend:
+  #   image: nft-marketplace-backend
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "3000:3000"
+  #   volumes:
+  #     - .:/app
+  #   depends_on:
+  #     - db
+  #   environment:
+  #     - DATABASE_URL=postgres://postgres:postgres@db:5432/nft_marketplace
+  #     - DATABASE_URL_TEST=postgres://postgres:postgres@db:5432/nft_marketplace_test
+  db:
+    image: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=nft_marketplace
+  pgadmin:
+    image: dpage/pgadmin4
+    ports:
+      - "5051:80"
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=user@domain.com
+      - PGADMIN_DEFAULT_PASSWORD=password
