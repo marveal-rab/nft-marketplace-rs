@@ -34,7 +34,7 @@ async fn ipfs_file_upload(file_name: String, file_bytes: Vec<u8>) -> Result<Stri
                         match serde_json::from_str::<serde_json::Value>(&response_body) {
                             Ok(response_body_json) => {
                                 let ipfs_url = format!(
-                                    "https://ipfs.io/ipfs/{}",
+                                    "http://127.0.0.1:8080/ipfs/{}",
                                     response_body_json["Hash"].as_str().unwrap_or_default()
                                 );
                                 Ok(ipfs_url.to_string())

@@ -48,10 +48,15 @@ impl CollectionMutation {
         ctx: &Context<'_>,
         new_collection: NewCollection,
     ) -> Result<CreateCollectionResult, AppError> {
+        tracing::info!("Creating collection: {:?}", new_collection);
         let encrypt_user_info = ctx
             .data_opt::<Token>()
             .ok_or(AppError::MissingCredentials)?
             .parse()?;
+        tracing::info!(
+            "Creating collection for user: {}",
+            encrypt_user_info.address
+        );
         InsertedCollection {
             name: new_collection.name,
             symbol: new_collection.symbol,

@@ -27,7 +27,7 @@ async fn graphql_handler(
     req: GraphQLRequest,
 ) -> Result<GraphQLResponse, AppError> {
     let mut req = req.into_inner();
-    tracing::info!("graphql_handler: {}", req.query);
+    tracing::info!("graphql_handler: {} {}", req.query, req.variables);
 
     match headers
         .get(http::header::AUTHORIZATION)
