@@ -11,6 +11,9 @@ diesel::table! {
         owner -> Varchar,
         #[max_length = 255]
         pic_url -> Varchar,
+        #[max_length = 64]
+        contract_address -> Varchar,
+        chain_id -> Int4,
         created_at -> Timestamptz,
         updated_at -> Timestamptz,
     }

@@ -6,8 +6,11 @@ use axum::response::{IntoResponse, Response};
 use axum::Json;
 use serde_json::json;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum AppError {
+    SerializeUrlError,
+    ParseUrlError,
+
     // TOKEN
     InvalidToken,
     WrongCredentials,
@@ -16,12 +19,13 @@ pub enum AppError {
 
     // UPLOAD
     UploadMissingFile,
+    HashMismatch,
 
     // IPFS
-    RequestIpfsAddFailed,
-    RequestIpfsAddError,
-    RequestIpfsAddResponseNoBody,
-    RequestIpfsAddResponseBodyDeserializeFailed,
+    RequestIpfsFailed,
+    RequestIpfsError,
+    RequestIpfsResponseNoBody,
+    RequestIpfsResponseBodyDeserializeFailed,
 
     // DATABASE
     NoDatabaseConnection,
@@ -32,6 +36,7 @@ pub enum AppError {
     UserQueryError,
     // COLLECTION
     CollectionNotFound,
+    CollectionQueryError,
     CreateCollectionFailed,
 }
 
@@ -42,10 +47,10 @@ impl IntoResponse for AppError {
             AppError::MissingCredentials => (StatusCode::BAD_REQUEST, "Missing credentials"),
             AppError::TokenCreation => (StatusCode::INTERNAL_SERVER_ERROR, "Token creation error"),
             AppError::InvalidToken => (StatusCode::BAD_REQUEST, "Invalid token"),
-            AppError::RequestIpfsAddFailed
-            | AppError::RequestIpfsAddError
-            | AppError::RequestIpfsAddResponseNoBody
-            | AppError::RequestIpfsAddResponseBodyDeserializeFailed => (
+            AppError::RequestIpfsFailed
+            | AppError::RequestIpfsError
+            | AppError::RequestIpfsResponseNoBody
+            | AppError::RequestIpfsResponseBodyDeserializeFailed => (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 "Failed to upload file to IPFS",
             ),

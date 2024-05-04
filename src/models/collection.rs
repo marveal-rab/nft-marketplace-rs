@@ -1,3 +1,5 @@
+use core::str;
+
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use diesel::{Queryable, Selectable};
@@ -17,8 +19,17 @@ pub struct Collection {
     pub symbol: String,
     pub owner: String,
     pub pic_url: String,
+    pub contract_address: String,
+    pub chain_id: i32,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
+}
+
+#[derive(Default)]
+pub struct CollectionQuery {
+    pub id: Option<Uuid>,
+    pub owner: Option<String>,
+    pub contract_address: Option<String>,
 }
 
 impl Collection {
@@ -32,6 +43,37 @@ impl Collection {
                 AppError::CollectionNotFound
             })
     }
+
+    pub async fn find_by_query(query: CollectionQuery) -> Result<Option<Collection>, AppError> {
+        let connection = &mut establish_connection();
+        let mut query_builder = collections::table.into_boxed();
+        if let Some(_id) = query.id {
+            query_builder = query_builder.filter(collections::id.eq(_id));
+        }
+        if let Some(owner) = query.owner {
+            query_builder = query_builder.filter(collections::owner.eq(owner));
+        }
+        if let Some(contract_address) = query.contract_address {
+            query_builder =
+                query_builder.filter(collections::contract_address.eq(contract_address));
+        }
+        match query_builder
+            .select(Collection::as_select())
+            .limit(1)
+            .first(connection)
+            .optional()
+        {
+            Ok(collection) => Ok(collection),
+            Err(err) => {
+                if err == diesel::NotFound {
+                    Ok(None)
+                } else {
+                    tracing::error!("find collection error: {:?}", err);
+                    Err(AppError::CollectionQueryError)
+                }
+            }
+        }
+    }
 }
 
 #[derive(Debug, Insertable)]
@@ -41,6 +83,8 @@ pub struct InsertedCollection {
     pub symbol: String,
     pub owner: String,
     pub pic_url: String,
+    pub contract_address: String,
+    pub chain_id: i32,
 }
 
 impl InsertedCollection {
