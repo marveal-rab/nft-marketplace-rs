@@ -1,10 +1,8 @@
-use std::io::Read;
-
 use async_graphql::{Context, Object, SimpleObject, Upload};
-use ipfs_api::{Client, LocalIPFSClient};
+use ipfs_api::{AddRequest, Client, LocalIPFSClient};
 use serde::{Deserialize, Serialize};
 
-use crate::errors::AppError;
+use crate::{errors::AppError, util::parse_upload};
 
 use super::AppResponse;
 
@@ -20,22 +18,10 @@ pub struct IPFSFile {
 #[Object]
 impl FileMutation {
     async fn upload_file(&self, ctx: &Context<'_>, file: Upload) -> AppResponse<IPFSFile> {
-        let file_name = file.value(ctx).unwrap().filename;
-        let mut buffer = Vec::new();
-        file.value(ctx)
-            .unwrap()
-            .content
-            .read_to_end(&mut buffer)
-            .map_err(|err| {
-                tracing::error!("upload file error: {:?}", err);
-                AppError::UploadMissingFile
-            })?;
-        let form = reqwest::multipart::Form::new().part(
-            "file",
-            reqwest::multipart::Part::bytes(buffer).file_name(file_name),
-        );
+        let (filename, bytes) = parse_upload(ctx, file)?;
+        let add_request = AddRequest::new_with_file(filename, bytes);
         let response = LocalIPFSClient::default()
-            .add_multipart(form)
+            .add(add_request)
             .await
             .map_err(|err| {
                 tracing::error!("upload file to ipfs error: {:?}", err);

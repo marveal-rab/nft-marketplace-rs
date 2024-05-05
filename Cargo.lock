@@ -849,12 +849,22 @@ dependencies = [
 name = "ipfs-api"
 version = "0.1.0"
 dependencies = [
+ "ipfs-api-derive",
  "log",
  "reqwest",
  "serde",
  "serde_json",
  "serde_urlencoded",
  "thiserror",
+]
+
+[[package]]
+name = "ipfs-api-derive"
+version = "0.1.0"
+dependencies = [
+ "quote",
+ "serde_urlencoded",
+ "syn",
 ]
 
 [[package]]

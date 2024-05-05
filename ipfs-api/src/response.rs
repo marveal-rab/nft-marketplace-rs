@@ -13,8 +13,22 @@ pub async fn json(response: reqwest::Response) -> Result<serde_json::Value, Erro
     })
 }
 
+pub async fn text(response: reqwest::Response) -> Result<String, Error> {
+    response.text().await.map_err(|err| {
+        error!("Failed to read response body: {:?}", err);
+        Error::ResponseBodyReadError
+    })
+}
+
 pub trait Parsable {
-    async fn parse(response: reqwest::Response) -> Result<Self, Error>
-    where
-        Self: Sized;
+    async fn parse(response: reqwest::Response) -> Result<impl Parsable, Error>;
+}
+
+pub struct EmptyResponse;
+
+impl Parsable for EmptyResponse {
+    async fn parse(_response: reqwest::Response) -> Result<Self, Error> {
+        let _ = text(_response).await?;
+        Ok(EmptyResponse)
+    }
 }

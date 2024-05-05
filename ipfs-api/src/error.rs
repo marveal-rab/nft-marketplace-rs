@@ -7,6 +7,14 @@ pub enum Error {
     #[error("request url parse error")]
     UrlParse,
 
+    #[error("serialize object error")]
+    SerializeObject,
+
+    #[error("no file bytes")]
+    NoFileBytes,
+    #[error("no filename")]
+    NoFilename,
+
     #[error("request failed")]
     RequestFailed,
     #[error("request error")]

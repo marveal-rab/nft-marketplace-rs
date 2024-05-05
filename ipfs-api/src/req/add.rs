@@ -1,7 +1,15 @@
+use ipfs_api_derive::QueryParam;
+use reqwest::multipart::{Form, Part};
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize, Default)]
-pub struct AddRequest {
+use crate::{
+    error::Error,
+    request::{QueryParam, WithForm},
+};
+
+#[derive(Debug, Serialize, Deserialize, Default, QueryParam, Clone)]
+#[serde(rename_all = "kebab-case")]
+pub struct AddQuery {
     // Write minimal output. Required: no.
     pub quiet: Option<bool>,
     // Write only final hash. Required: no.
@@ -38,6 +46,49 @@ pub struct AddRequest {
     pub to_files: Option<String>,
 }
 
-impl crate::request::Request for AddRequest {
-    const PATH: &'static str = "add";
+#[derive(Debug, Clone)]
+pub struct AddRequest {
+    pub query: AddQuery,
+    // Form fields
+    pub filename: Option<String>,
+    pub bytes: Option<Vec<u8>>,
+}
+
+impl AddRequest {
+    #[allow(dead_code)]
+    pub fn new(query: AddQuery) -> Self {
+        AddRequest {
+            query,
+            filename: None,
+            bytes: None,
+        }
+    }
+
+    #[allow(dead_code)]
+    pub fn new_with_query_and_file(query: AddQuery, filename: String, bytes: Vec<u8>) -> Self {
+        AddRequest {
+            query,
+            filename: Some(filename),
+            bytes: Some(bytes),
+        }
+    }
+
+    #[allow(dead_code)]
+    pub fn new_with_file(filename: String, bytes: Vec<u8>) -> Self {
+        AddRequest {
+            query: AddQuery::default(),
+            filename: Some(filename),
+            bytes: Some(bytes),
+        }
+    }
+}
+
+impl WithForm for AddRequest {
+    fn form(&self) -> Result<Form, Error> {
+        let form = Form::new();
+        let b = self.bytes.clone().unwrap();
+        let f = self.filename.clone().unwrap();
+        let form = form.part("file", Part::bytes(b).file_name(f));
+        Ok(form)
+    }
 }
