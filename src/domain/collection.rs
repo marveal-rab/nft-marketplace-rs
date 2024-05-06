@@ -1,4 +1,8 @@
 use async_graphql::{Context, InputObject, Object, SimpleObject};
+use ipfs_api::{
+    files::{MkdirQuery, MkdirRequest},
+    Client, LocalIPFSClient,
+};
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -67,8 +71,9 @@ impl CollectionMutation {
         &self,
         ctx: &Context<'_>,
         new_collection: NewCollection,
-    ) -> Result<CreateCollectionResult, AppError> {
+    ) -> AppResponse<CreateCollectionResult> {
         tracing::info!("Creating collection: {:?}", new_collection);
+        // Check if the user is authenticated
         let encrypt_user_info = ctx
             .data_opt::<Token>()
             .ok_or(AppError::MissingCredentials)?
@@ -77,10 +82,25 @@ impl CollectionMutation {
             "Creating collection for user: {}",
             encrypt_user_info.address
         );
-        InsertedCollection::new(new_collection, encrypt_user_info.address)
+
+        // Create a new collection
+        let collection = InsertedCollection::new(new_collection, encrypt_user_info.address)
             .insert()
+            .await?;
+
+        // mkdir collection dir in IPFS
+        let mkdir_request = MkdirRequest {
+            query: MkdirQuery::default(),
+        };
+        let _ = LocalIPFSClient::default()
+            .files_mkdir(mkdir_request)
             .await
-            .map(|collection| CreateCollectionResult::from(collection))
+            .map_err(|err| {
+                tracing::error!("IPFS mkdir error: {:?}", err);
+                AppError::RequestIpfsError
+            })?;
+
+        Ok(Some(CreateCollectionResult::from(collection)))
     }
 }
 

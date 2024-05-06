@@ -79,7 +79,7 @@ impl Client for LocalIPFSClient {
     }
 
     async fn files_mkdir(&self, req: req::files::MkdirRequest) -> Result<EmptyResponse, Error> {
-        let url = RequestUrl::new(&self.endpoint, "files/mkdir", req.query).url()?;
+        let url = RequestUrl::new(&self.endpoint, "files/mkdir", &req.query).url()?;
         let response = post(url).await?;
         EmptyResponse::parse(response).await
     }
@@ -94,13 +94,16 @@ impl Client for LocalIPFSClient {
     }
 
     async fn files_write(&self, req: req::files::WriteRequest) -> Result<EmptyResponse, Error> {
-        let url: Url = RequestUrl::new(&self.endpoint, "files/write", req.query).url()?;
-        let response = post(url).await?;
+        let url: Url = RequestUrl::new(&self.endpoint, "files/write", &req.query).url()?;
+        let form = req.form()?;
+        let response = post_with_form(url, form).await?;
+        // Add Test Log
+        log::info!("files_write response: {:?}", response);
         EmptyResponse::parse(response).await
     }
 
     async fn dag_put(&self, req: req::dag::PutRequest) -> Result<resp::dag::PutResponse, Error> {
-        let url: Url = RequestUrl::new(&self.endpoint, "dag/put", req.query).url()?;
+        let url: Url = RequestUrl::new(&self.endpoint, "dag/put", &req.query).url()?;
         let form = req.form()?;
         let response = post_with_form(url, form).await?;
         resp::dag::PutResponse::parse(response).await

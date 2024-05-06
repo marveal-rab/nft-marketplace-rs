@@ -1,4 +1,3 @@
-use log::error;
 use reqwest::{multipart::Form, Client, Response, Url};
 use serde::Serialize;
 
@@ -27,7 +26,7 @@ impl<'a, Q: QueryParam> RequestUrl<'a, Q> {
     pub fn url(&self) -> Result<Url, Error> {
         let url = format!("{}/{}?{}", self.base, self.path, self.query.encode());
         Url::parse(&url).map_err(|err| {
-            error!("Failed to parse URL: {:?}", err);
+            log::error!("Failed to parse URL: {:?}", err);
             Error::UrlParse
         })
     }
@@ -38,33 +37,33 @@ impl<'a, Q: QueryParam> RequestUrl<'a, Q> {
 }
 
 pub async fn post_with_form(url: Url, form: Form) -> Result<Response, Error> {
-    let client = Client::new();
-    let response = client
-        .request(reqwest::Method::POST, url)
-        .multipart(form)
-        .send()
-        .await
-        .map_err(|err| {
-            error!("Failed to send request: {:?}", err);
-            Error::RequestError
-        })?;
-    if !response.status().is_success() {
-        return Err(Error::RequestFailed);
-    }
-    Ok(response)
+    _post(url, Some(form)).await
 }
 
 pub async fn post(url: Url) -> Result<Response, Error> {
+    _post(url, None).await
+}
+
+async fn _post(url: Url, form: Option<Form>) -> Result<Response, Error> {
     let client = Client::new();
-    let response = client
-        .request(reqwest::Method::POST, url)
-        .send()
-        .await
-        .map_err(|err| {
-            error!("Failed to send request: {:?}", err);
-            Error::RequestError
-        })?;
+    let mut request_builder = client.request(reqwest::Method::POST, url.clone());
+    if let Some(form) = form {
+        request_builder = request_builder.multipart(form);
+    }
+    let response = request_builder.send().await.map_err(|err| {
+        log::error!(
+            "Send request get error: \n\turl:{:?}\n\terror:{:?}",
+            url.clone().to_string(),
+            err
+        );
+        Error::RequestError
+    })?;
     if !response.status().is_success() {
+        log::error!(
+            "send request failed: \n\turl:{:?}\n\tresponse:{:?}",
+            url.clone().to_string(),
+            response.text().await.unwrap_or_default()
+        );
         return Err(Error::RequestFailed);
     }
     Ok(response)

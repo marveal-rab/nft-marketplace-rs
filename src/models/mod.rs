@@ -3,6 +3,8 @@ use diesel::PgConnection;
 use std::env;
 
 pub mod collection;
+pub mod nft;
+pub mod nft_trait;
 pub mod schema;
 pub mod user;
 

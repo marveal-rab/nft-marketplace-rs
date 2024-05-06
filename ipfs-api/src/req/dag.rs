@@ -34,7 +34,7 @@ pub struct PutQuery {
 }
 
 pub struct PutRequest {
-    pub query: &'static PutQuery,
+    pub query: PutQuery,
     pub object_data: serde_json::Value,
 }
 

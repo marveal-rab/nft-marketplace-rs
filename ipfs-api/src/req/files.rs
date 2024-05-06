@@ -1,5 +1,9 @@
-use crate::request::QueryParam;
+use crate::{
+    error::Error,
+    request::{QueryParam, WithForm},
+};
 use ipfs_api_derive::QueryParam;
+use reqwest::multipart::{Form, Part};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -72,7 +76,7 @@ pub struct MkdirQuery {
 }
 
 pub struct MkdirRequest {
-    pub query: &'static MkdirQuery,
+    pub query: MkdirQuery,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -159,7 +163,34 @@ pub struct WriteQuery {
     pub hash: Option<String>,
 }
 
+impl WriteQuery {
+    pub fn new_with_arg(arg: String) -> Self {
+        Self {
+            arg,
+            offset: None,
+            create: Some(true),
+            parents: None,
+            truncate: None,
+            count: None,
+            raw_leaves: None,
+            cid_version: None,
+            hash: None,
+        }
+    }
+}
+
 pub struct WriteRequest {
-    pub query: &'static WriteQuery,
+    pub query: WriteQuery,
     pub bytes: Vec<u8>,
+    pub filename: String,
+}
+
+impl WithForm for WriteRequest {
+    fn form(&self) -> Result<Form, Error> {
+        let form = Form::new();
+        let b = self.bytes.clone();
+        let f = self.filename.clone();
+        let form = form.part("data", Part::bytes(b).file_name(f));
+        Ok(form)
+    }
 }

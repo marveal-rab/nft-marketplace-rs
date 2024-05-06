@@ -5,7 +5,7 @@ CREATE TABLE collections (
     symbol VARCHAR(64) NOT NULL,
     owner VARCHAR(64) NOT NULL,
     pic_url VARCHAR(255) NOT NULL,
-    contract_address VARCHAR(64) NOT NULL,
+    contract_address VARCHAR(64) NOT NULL UNIQUE,
     chain_id INT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()

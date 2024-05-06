@@ -20,6 +20,38 @@ diesel::table! {
 }
 
 diesel::table! {
+    nft_traits (id) {
+        id -> Uuid,
+        nft_id -> Uuid,
+        #[max_length = 255]
+        trait_type -> Varchar,
+        #[max_length = 255]
+        trait_value -> Varchar,
+        created_at -> Nullable<Timestamp>,
+        updated_at -> Nullable<Timestamp>,
+    }
+}
+
+diesel::table! {
+    nfts (id) {
+        id -> Uuid,
+        token_id -> Int4,
+        name -> Text,
+        description -> Nullable<Text>,
+        image_url -> Text,
+        supply -> Int4,
+        #[max_length = 255]
+        external_link -> Nullable<Varchar>,
+        #[max_length = 64]
+        owner -> Varchar,
+        #[max_length = 64]
+        collection -> Varchar,
+        created_at -> Nullable<Timestamp>,
+        updated_at -> Nullable<Timestamp>,
+    }
+}
+
+diesel::table! {
     users (id) {
         id -> Uuid,
         #[max_length = 255]
@@ -37,5 +69,7 @@ diesel::table! {
 
 diesel::allow_tables_to_appear_in_same_query!(
     collections,
+    nft_traits,
+    nfts,
     users,
 );

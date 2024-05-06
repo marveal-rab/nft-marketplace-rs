@@ -38,6 +38,14 @@ pub enum AppError {
     CollectionNotFound,
     CollectionQueryError,
     CreateCollectionFailed,
+    // NFT
+    NftNotFound,
+    CreateNFTFailed,
+    // NFT Trait
+    NftTraitNotFound,
+    CreateNFTTraitFailed,
+
+    NotImplemented,
 }
 
 impl IntoResponse for AppError {

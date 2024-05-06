@@ -1,5 +1,5 @@
 use async_graphql::{Context, Object, SimpleObject, Upload};
-use ipfs_api::{AddRequest, Client, LocalIPFSClient};
+use ipfs_api::{add::AddRequest, Client, LocalIPFSClient};
 use serde::{Deserialize, Serialize};
 
 use crate::{errors::AppError, util::parse_upload};

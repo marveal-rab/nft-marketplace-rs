@@ -5,5 +5,5 @@ mod request;
 mod resp;
 mod response;
 
-pub use client::{Client, LocalIPFSClient};
-pub use req::add::*;
+pub use client::*;
+pub use req::*;
