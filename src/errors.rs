@@ -44,6 +44,7 @@ pub enum AppError {
     // NFT Trait
     NftTraitNotFound,
     CreateNFTTraitFailed,
+    CountNFTFailed,
 
     NotImplemented,
 }

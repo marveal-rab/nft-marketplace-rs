@@ -14,6 +14,10 @@ diesel::table! {
         #[max_length = 64]
         contract_address -> Varchar,
         chain_id -> Int4,
+        #[max_length = 64]
+        dir_name -> Varchar,
+        #[max_length = 64]
+        dir_hash -> Varchar,
         created_at -> Timestamptz,
         updated_at -> Timestamptz,
     }

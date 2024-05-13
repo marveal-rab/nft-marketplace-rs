@@ -75,6 +75,22 @@ pub struct MkdirQuery {
     pub hash: Option<String>,
 }
 
+impl MkdirQuery {
+    pub fn new_with_arg(arg: &String) -> Self {
+        let mut arg = arg.clone();
+        if !arg.starts_with("/") {
+            arg = format!("/{}", arg);
+        }
+
+        Self {
+            arg: arg.clone(),
+            parents: Some(true),
+            cid_version: None,
+            hash: None,
+        }
+    }
+}
+
 pub struct MkdirRequest {
     pub query: MkdirQuery,
 }
@@ -121,7 +137,7 @@ pub struct RmRequest {
     pub query: RmQuery,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, QueryParam, Default)]
 #[serde(rename_all = "kebab-case")]
 pub struct StatQuery {
     // Path to node to stat. Required: yes.
@@ -134,6 +150,23 @@ pub struct StatQuery {
     pub size: Option<bool>,
     // Compute the amount of the dag that is local, and if possible the total size. Required: no.
     pub with_local: Option<bool>,
+}
+
+impl StatQuery {
+    pub fn new_with_arg(arg: &String) -> Self {
+        let mut arg = arg.clone();
+        if !arg.starts_with("/") {
+            arg = format!("/{}", arg);
+        }
+
+        Self {
+            arg: arg.clone(),
+            format: None,
+            hash: None,
+            size: None,
+            with_local: None,
+        }
+    }
 }
 
 pub struct StatRequest {
@@ -165,6 +198,10 @@ pub struct WriteQuery {
 
 impl WriteQuery {
     pub fn new_with_arg(arg: String) -> Self {
+        let mut arg = arg.clone();
+        if !arg.starts_with("/") {
+            arg = format!("/{}", arg);
+        }
         Self {
             arg,
             offset: None,

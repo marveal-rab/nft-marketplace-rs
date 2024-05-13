@@ -4,7 +4,7 @@ use reqwest::Url;
 
 use crate::{
     error::Error,
-    req::{self},
+    req,
     request::{post, post_with_form, RequestUrl, WithForm},
     resp::{self, add::AddResponse},
     response::{EmptyResponse, Parsable},
@@ -39,6 +39,11 @@ pub trait Client {
         &self,
         req: req::files::WriteRequest,
     ) -> impl Future<Output = Result<EmptyResponse, Error>> + Send;
+
+    fn files_stat(
+        &self,
+        req: req::files::StatRequest,
+    ) -> impl Future<Output = Result<resp::files::StatResponse, Error>> + Send;
 
     /**
      * Add a DAG node to IPFS.
@@ -107,5 +112,16 @@ impl Client for LocalIPFSClient {
         let form = req.form()?;
         let response = post_with_form(url, form).await?;
         resp::dag::PutResponse::parse(response).await
+    }
+
+    async fn files_stat(
+        &self,
+        req: req::files::StatRequest,
+    ) -> Result<resp::files::StatResponse, Error> {
+        let url: Url = RequestUrl::new(&self.endpoint, "files/stat", &req.query).url()?;
+        let response = post(url).await?;
+        // Add Test Log
+        log::info!("files_stat response: {:?}", response);
+        resp::files::StatResponse::parse(response).await
     }
 }

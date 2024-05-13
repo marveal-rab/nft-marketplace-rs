@@ -7,6 +7,8 @@ CREATE TABLE collections (
     pic_url VARCHAR(255) NOT NULL,
     contract_address VARCHAR(64) NOT NULL UNIQUE,
     chain_id INT NOT NULL,
+    dir_name VARCHAR(64) NOT NULL,
+    dir_hash VARCHAR(64) NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );

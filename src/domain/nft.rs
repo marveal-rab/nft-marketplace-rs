@@ -1,10 +1,9 @@
 use async_graphql::{Context, InputObject, Object, SimpleObject};
-use ipfs_api::{
-    files::{WriteQuery, WriteRequest},
-    Client, LocalIPFSClient,
-};
+use ipfs_api::client::{Client, LocalIPFSClient};
+use ipfs_api::req::files::{WriteQuery, WriteRequest};
 use serde::{Deserialize, Serialize};
 
+use crate::models;
 use crate::{
     errors::AppError,
     models::{
@@ -172,7 +171,7 @@ impl NFTMutation {
             contract_address: Some(new_nft.collection.clone()),
             ..Default::default()
         };
-        let _ = Collection::find_by_query(collection_query)
+        let collection = Collection::find_by_query(collection_query)
             .await?
             .ok_or(AppError::CollectionNotFound)?;
 
@@ -187,7 +186,7 @@ impl NFTMutation {
 
         // upload nft metadata to IPFS
         let filename = format!("{}.json", nft.token_id);
-        let path = format!("/{}/{}.json", new_nft.collection.clone(), nft.token_id);
+        let path = format!("/{}/{}.json", collection.dir_name.clone(), nft.token_id);
         let nft_metadata = convert_to_nft_metadata(&nft, &nft_traits);
         let write_request = WriteRequest {
             query: WriteQuery::new_with_arg(path),
@@ -219,5 +218,32 @@ impl NFTQuery {
         let nft_traits = NFTTrait::list_by_nft_id(nft.id).await?;
 
         Ok(convert_to_nft_result(&nft, &nft_traits))
+    }
+
+    async fn next_token_id(&self, ctx: &Context<'_>, contract_address: String) -> AppResponse<i64> {
+        // Check if the user is authenticated
+        let encrypt_user_info = ctx
+            .data_opt::<Token>()
+            .ok_or(AppError::MissingCredentials)?
+            .parse()?;
+
+        // check collection is valid
+        let collection_query = CollectionQuery {
+            owner: Some(encrypt_user_info.address.clone()),
+            contract_address: Some(contract_address),
+            ..Default::default()
+        };
+        let collection = Collection::find_by_query(collection_query)
+            .await?
+            .ok_or(AppError::CollectionNotFound)?;
+
+        // Find NFT count by collection
+        let count = models::nft::NFTQuery {
+            collection: Some(collection.contract_address),
+            ..Default::default()
+        }
+        .count()
+        .await?;
+        Ok(Some(count + 1))
     }
 }

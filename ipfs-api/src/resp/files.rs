@@ -46,15 +46,15 @@ impl Parsable for LsResponse {
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "PascalCase")]
 pub struct StatResponse {
-    pub blocks: i32,
-    pub cumulative_size: u64,
-    pub hash: String,
-    pub local: bool,
-    pub size: u64,
-    pub size_local: u64,
+    pub blocks: Option<i32>,
+    pub cumulative_size: Option<u64>,
+    pub hash: Option<String>,
+    pub local: Option<bool>,
+    pub size: Option<u64>,
+    pub size_local: Option<u64>,
     #[serde(rename = "Type")]
-    pub typ: String,
-    pub with_locality: bool,
+    pub typ: Option<String>,
+    pub with_locality: Option<bool>,
 }
 
 impl Parsable for StatResponse {

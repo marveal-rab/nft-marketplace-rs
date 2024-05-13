@@ -1,4 +1,4 @@
-workspace = { members = ["ipfs-api"] }
+workspace = { members = ["ipfs-api", "web3-api"] }
 [package]
 name = "nft-marketplace-rs"
 version = "0.1.0"
@@ -8,7 +8,7 @@ edition = "2021"
 
 [dependencies]
 axum = { version = "0.7.5", features = ["multipart"] }
-async-graphql = { version = "7.0.3", features = ["chrono"]}
+async-graphql = { version = "7.0.3", features = ["chrono"] }
 async-graphql-axum = { version = "7.0.3" }
 tokio = { version = "1.37.0", features = ["rt-multi-thread"] }
 tower-http = { version = "0.5.2", features = ["cors"] }

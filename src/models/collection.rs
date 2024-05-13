@@ -21,6 +21,8 @@ pub struct Collection {
     pub pic_url: String,
     pub contract_address: String,
     pub chain_id: i32,
+    pub dir_name: String,
+    pub dir_hash: String,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
 }
@@ -85,6 +87,8 @@ pub struct InsertedCollection {
     pub pic_url: String,
     pub contract_address: String,
     pub chain_id: i32,
+    pub dir_name: String,
+    pub dir_hash: String,
 }
 
 impl InsertedCollection {

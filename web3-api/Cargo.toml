@@ -1,0 +1,15 @@
+[package]
+name = "web3-api"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+alloy = { git = "https://github.com/alloy-rs/alloy", features = [
+  "node-bindings",
+  "providers",
+  "rpc-types-trace",
+] }
+eyre = "0.6.12"
+tokio = { version = "1", features = ["full"] }
